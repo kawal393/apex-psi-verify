@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use APEX PSI verify, please cite it as below."
+title: "apex-psi-verify"
+version: 1.0.0
+date-released: 2026-07-16
+url: "https://github.com/kawal393/apex-psi-verify"
+type: software
+authors:
+  - family-names: Singh
+    given-names: Kawaljeet
+    alias: "APEX Empire"
+keywords:
+  - post-quantum
+  - cryptography
+  - lms
+  - winternitz
+  - ed25519
+  - seal
+  - verification
