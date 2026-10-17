@@ -4,14 +4,17 @@
 
 > *APEX PSI — Authoritative. Ineluctable. Sovereign.*
 
-`apex-psi-verify` is the reference implementation of the APEX PSI
-cryptographic seal format. It combines:
+`apex-psi-verify` seals content with a post-quantum hash-based signature and
+checks it again independently. It implements:
 
-- **Ed25519** for fast classical signatures
-- **LMS-W4-SHA256** (RFC 8554, NIST SP 800-208) for post-quantum
-  security
+- **LMS-W4-SHA256** (RFC 8554, NIST SP 800-208) for post-quantum security
 - **W-OTS+** one-time signatures (W=4, 16 chain levels)
 - **SHA-256 Merkle tree** (depth 5, 32 leaves)
+
+Ed25519 is **not** implemented in this package. The classical Ed25519 signature
+required by PSI-SEAL/1 rule R11 is created and checked by the PSI verifier in
+[APEX-PSI/packages/psi-verifier](https://github.com/kawal393/APEX-PSI/tree/main/packages/psi-verifier),
+which is the package to use for verifying published PSI receipts.
 
 A 32-leaf LMS tree yields 32 seals before key rotation is required.
 The verify API rotates automatically.
@@ -101,7 +104,7 @@ companion repository
 | Merkle depth   | 5 |
 | Leaves/tree    | 32 |
 | Hash function  | SHA-256 |
-| Classical      | Ed25519 (RFC 8032) |
+| Classical      | not implemented here (see the note above) |
 
 These are conservative, NIST-approved parameters.
 

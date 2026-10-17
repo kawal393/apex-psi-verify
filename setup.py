@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name="apex-psi-verify",
-    version="1.0.0",
-    description="Post-quantum, hash-anchored content seal verifier. LMS-W4-SHA256 + Ed25519.",
+    version="1.0.1",
+    description="Post-quantum, hash-anchored content seal verifier. LMS-W4-SHA256 (RFC 8554).",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     author="Kawaljeet Singh",

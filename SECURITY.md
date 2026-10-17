@@ -11,9 +11,14 @@ timeline within 7 days for critical issues.
 
 ## Cryptographic primitives
 
-- **Ed25519** (RFC 8032) for the classical fast path
 - **LMS-W4-SHA256** (RFC 8554, NIST SP 800-208) for post-quantum security
+- **W-OTS+** one-time signatures underneath each LMS leaf
 - **SHA-256** (FIPS 180-4) for content addressing
+
+Ed25519 (RFC 8032) is **not** implemented in this package; classical Ed25519
+signature checking for PSI-SEAL/1 receipts lives in the PSI verifier in
+APEX-PSI (`packages/psi-verifier`). Report any claim in this repository that
+does not match its code as a security issue.
 
 W-OTS+ parameters: `W=4`, 16 chain levels, 68 chains, 2176-byte
 signature. Merkle tree depth 5, 32 leaves per tree.

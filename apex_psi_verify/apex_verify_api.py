@@ -138,8 +138,9 @@ def _now() -> str:
 
 def create_seal(content: str) -> dict:
     """
-    Create a PSI seal using REAL post-quantum (LMS-W4-SHA256) + Ed25519-style
-    identity binding. Returns a self-contained, self-verifiable seal dict.
+    Create a PSI seal using REAL post-quantum (LMS-W4-SHA256). The signer's
+    public key is bound into the seal id by hashing; no Ed25519 signature is
+    created here. Returns a self-contained seal dict.
     """
     if not HAS_PQ_SEAL:
         raise RuntimeError(f"pq_seal unavailable: {_IMPORT_ERR}")
@@ -184,7 +185,7 @@ def create_seal(content: str) -> dict:
     seal = {
         "seal_id": seal_id,
         "version": "2.0",
-        "algorithm": "Ed25519 + LMS-W4-SHA256",
+        "algorithm": "LMS-W4-SHA256",
         "ineluctable": True,
         "content_hash": content_hash,
         "content_length": len(content),
@@ -215,7 +216,10 @@ def create_seal(content: str) -> dict:
 def verify_seal(content: str, seal_id: str = None, seal: dict = None) -> dict:
     """
     Verify a seal. Accepts EITHER (content + seal_id) OR (content + full seal).
-    Returns a structured verdict with method, pq_verified, ed25519_verified, etc.
+    Returns a structured verdict with method, pq_verified, registry_hit, etc.
+    This package implements LMS-W4-SHA256 only. It does not create or check an
+    Ed25519 signature; PSI-SEAL/1 R11 signature checking lives in the PSI
+    verifier (APEX-PSI/packages/psi-verifier).
     """
     if not HAS_PQ_SEAL:
         return {
@@ -346,7 +350,7 @@ if HAS_FLASK:
             "service": "apex-psi-verify",
             "version": "2.0",
             "pq_seal_available": HAS_PQ_SEAL,
-            "algorithm": "Ed25519 + LMS-W4-SHA256" if HAS_PQ_SEAL else None,
+            "algorithm": "LMS-W4-SHA256" if HAS_PQ_SEAL else None,
             "signer_public_key": _signer.get_public_key_hex() if HAS_PQ_SEAL else None,
             "remaining_signatures": _signer.get_remaining_signatures() if HAS_PQ_SEAL else 0,
             "store_size": len(SEAL_STORE),
@@ -414,7 +418,7 @@ if HAS_FLASK:
         print("=" * 60)
         print(f" pq_seal.py available: {HAS_PQ_SEAL}")
         if HAS_PQ_SEAL:
-            print(f" Algorithm:           Ed25519 + LMS-W4-SHA256")
+            print(f" Algorithm:           LMS-W4-SHA256")
             print(f" Signer pub key:      {_signer.get_public_key_hex()[:32]}...")
             print(f" Remaining sigs:      {_signer.get_remaining_signatures()}")
         print(f" In-memory store:     {len(SEAL_STORE)} seals")
@@ -454,7 +458,7 @@ else:
                     "service": "apex-psi-verify",
                     "version": "2.0",
                     "pq_seal_available": HAS_PQ_SEAL,
-                    "algorithm": "Ed25519 + LMS-W4-SHA256" if HAS_PQ_SEAL else None,
+                    "algorithm": "LMS-W4-SHA256" if HAS_PQ_SEAL else None,
                     "signer_public_key": _signer.get_public_key_hex() if HAS_PQ_SEAL else None,
                     "remaining_signatures": _signer.get_remaining_signatures() if HAS_PQ_SEAL else 0,
                     "store_size": len(SEAL_STORE),
