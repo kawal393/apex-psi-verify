@@ -2,7 +2,7 @@
 
 **Post-quantum, hash-anchored content seal verifier.**
 
-> *APEX PSI — Authoritative. Ineluctable. Sovereign.*
+> *APEX PSI — a lightweight, neutral RFC 8785 reference implementation.*
 
 `apex-psi-verify` seals content with a post-quantum hash-based signature and
 checks it again independently. It implements:
