@@ -19,7 +19,6 @@ sig = signer.sign(content.encode("utf-8"))
 seal = {
     "version": "2.0",
     "algorithm": "LMS-W4-SHA256",
-    "ineluctable": True,
     "content_hash": hashlib.sha256(content.encode("utf-8")).hexdigest(),
     "signer_public_key": public_key,
     "pq_signature": sig,

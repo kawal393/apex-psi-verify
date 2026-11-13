@@ -6,7 +6,15 @@ A Flask app that exposes the PSI verification endpoint with REAL
 post-quantum signature verification via pq_seal.PostQuantumSigner.
 
 Day 0 of the master plan: this version wires the real LMS-W4-SHA256
-crypto so that "ineluctable" stops being a marketing word.
+crypto so that the seal is a cryptographic statement and not a slogan.
+
+NOTE ON SCOPE: this repository is the LMS-W4-SHA256 component and its
+standalone seal API. It is NOT the canonical verifier for published
+PSI-SEAL/1 receipts - that is `pip install psi-verifier` (v1.6.0), which
+verifies Ed25519 (R11), fails closed on an unverified post-quantum claim
+(R11.7), and checks RFC 9162 inclusion (R13.1) and consistency (R13.2)
+proofs with no registry and no network. This package is source-only and is
+not published on PyPI.
 
 USAGE:
     python apex_verify_api_wired.py
@@ -186,7 +194,6 @@ def create_seal(content: str) -> dict:
         "seal_id": seal_id,
         "version": "2.0",
         "algorithm": "LMS-W4-SHA256",
-        "ineluctable": True,
         "content_hash": content_hash,
         "content_length": len(content),
         "timestamp": _now(),
@@ -260,23 +267,36 @@ def verify_seal(content: str, seal_id: str = None, seal: dict = None) -> dict:
     pk_hex = seal.get("signer_public_key")
     pq_ok = verify_pq_signature(msg, pq_sig, pk_hex)
 
-    # 3. Anti-stripping check (the registry itself)
-    registry_hit = content_hash in REGISTRY
+    # 3. Anti-stripping check (the registry itself).
+    #    An empty registry means "we cannot tell", which is not the same fact as
+    #    "we never issued it". Reporting unknown as false would accuse a valid
+    #    third-party seal of being stripped.
+    registry_checked = bool(REGISTRY)
+    registry_hit = (content_hash in REGISTRY) if registry_checked else None
 
-    verified = bool(pq_ok and registry_hit)
+    # The cryptographic verdict and the registry signal are two different facts
+    # and must not be fused. A valid signature over a hash we have never seen is
+    # still a valid signature; the registry only tells you whether WE vouch for
+    # having issued it. Fusing them made this package report verified=false
+    # for correct mathematics whenever the registry was cold - which is exactly
+    # the offline case the project promises to support.
+    verified = bool(pq_ok)
     return {
         "verified": verified,
         "seal_id": seal.get("seal_id"),
         "method": "pq_lms_w4_sha256",
         "pq_verified": pq_ok,
         "registry_hit": registry_hit,
+        "registry_checked": registry_checked,
         "algorithm": seal.get("algorithm"),
         "signer_public_key": pk_hex,
         "timestamp": seal.get("timestamp"),
-        "ineluctable": verified and seal.get("ineluctable", False),
         "anti_strip_note": (
             "Hash present in registry - seal survives metadata strip"
-            if registry_hit else "Hash NOT in registry - possible strip"
+            if registry_hit
+            else "Registry empty - anti-strip check not performed; the signature itself still verifies"
+            if not registry_checked
+            else "Hash not in registry - not issued by us; the signature itself still verifies"
         ),
     }
 

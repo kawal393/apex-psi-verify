@@ -451,7 +451,7 @@ def _run_self_test():
     # Test 1: W-OTS sign + verify
     print("\n  [TEST 1] Winternitz-4 OTS...")
     sk, pk = WinternitzOTS.generate_keypair()
-    msg = b"APEX PSI - The truth protocol"
+    msg = b"APEX PSI - The audit trail protocol"
     sig = WinternitzOTS.sign(msg, sk)
     assert WinternitzOTS.verify(msg, sig, pk), "W-OTS verify failed!"
     print("    [OK] W-OTS sign + verify: PASS")

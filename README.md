@@ -1,8 +1,25 @@
 # apex-psi-verify
 
-**Post-quantum, hash-anchored content seal verifier.**
+**The LMS-W4-SHA256 component of APEX PSI, and its standalone seal API.**
 
 > *APEX PSI — a lightweight, neutral RFC 8785 reference implementation.*
+
+## Read this first: which verifier do you want?
+
+There are **three** packages that carry the APEX PSI verifier name. This table is
+the only place that distinguishes them, so read it before you install anything.
+
+| what you want | what to install | what it does |
+|---|---|---|
+| **Verify a published PSI-SEAL/1 receipt** | `pip install psi-verifier==1.6.0` | Ed25519 R11 enforced against your public key; an unverified post-quantum claim is reported `unverifiable`, never `verified` (R11.7); RFC 9162 inclusion proof checked (R13.1); RFC 9162 consistency proof checked, so one operator cannot show two histories of the same log (R13.2). **No registry, no network.** |
+| **The same, for JavaScript/TypeScript** | `npm install apex-psi-verifier@1.6.0` | The Node implementation of the above. |
+| **Work with LMS-W4-SHA256 itself** | this repo, from source | The hash-based post-quantum signer/verifier and its seal API. Source-only: **this package is not published on PyPI.** |
+
+If you only want to verify receipts, you want `psi-verifier` — it is the one that
+matches the specification. This repo is the post-quantum primitive it can be
+combined with.
+
+## What this repo is
 
 `apex-psi-verify` seals content with a post-quantum hash-based signature and
 checks it again independently. It implements:
@@ -18,6 +35,33 @@ which is the package to use for verifying published PSI receipts.
 
 A 32-leaf LMS tree yields 32 seals before key rotation is required.
 The verify API rotates automatically.
+
+## What the verdict means
+
+The verdict separates two facts that are often fused and should not be:
+
+- `verified` — **the mathematics**. The post-quantum signature checks out.
+- `registry_hit` — **our vouch**. Whether the hash is in *this operator's*
+  registry, i.e. whether we issued it. `null` means the registry was empty and
+  the check could not be made.
+
+A valid signature over a hash we have never seen is still a valid signature. A
+verifier that reports `verified=false` for correct mathematics is not
+verifying; it is looking things up. The canonical `psi-verifier` has no registry
+and no network at all, and neither does this verdict.
+
+## Run the outsider's-eye audit
+
+This repository grades its own public footprint the way a stranger would —
+registries, package identity, algorithm drift against the specification, whether
+"offline" is true, key-budget disclosure, and absolute claims:
+
+```bash
+python scripts/outsider_eye_audit.py
+```
+
+It exits non-zero on any FAIL. A FAIL is a claim this project is not currently
+entitled to make.
 
 ---
 
